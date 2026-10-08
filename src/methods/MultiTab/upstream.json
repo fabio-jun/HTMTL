@@ -1,0 +1,50 @@
+{
+  "changed_files": [
+    {
+      "new_file": false,
+      "path": "config.py"
+    },
+    {
+      "new_file": false,
+      "path": "data/__init__.py"
+    },
+    {
+      "new_file": false,
+      "path": "data/dataset.py"
+    },
+    {
+      "new_file": false,
+      "path": "main.py"
+    },
+    {
+      "new_file": false,
+      "path": "models/wrappers.py"
+    },
+    {
+      "new_file": true,
+      "path": "mtt_refit.py"
+    }
+  ],
+  "license_status": "No LICENSE file found at pinned revision; redistribution of this adapted runtime requires rights review.",
+  "release_adapted_files": [
+    "config.py",
+    "main.py",
+    "data/__init__.py"
+  ],
+  "repository": "https://github.com/Armanfard-Lab/MultiTab.git",
+  "revision": "4055d0cff1b3fff0d30e4301ab420510a7e798ea",
+  "runtime_files": [
+    "config.py",
+    "main.py",
+    "mtt_refit.py",
+    "data/__init__.py",
+    "data/dataset.py",
+    "models/mtt.py",
+    "models/layers.py",
+    "models/wrappers.py"
+  ],
+  "unchanged_architecture": [
+    "models/mtt.py",
+    "models/layers.py"
+  ]
+}

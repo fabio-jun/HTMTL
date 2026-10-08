@@ -1,0 +1,9 @@
+/datasets/**/*.csv
+/datasets/**/*.duckdb
+/datasets/**/*.duckdb.wal
+/datasets/**/*.h5
+/datasets/**/*.hdf5
+/datasets/**/*.npy
+/datasets/**/*.npz
+/datasets/**/*.joblib
+/datasets/**/prepared/
