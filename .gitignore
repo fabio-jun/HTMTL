@@ -1,0 +1,18 @@
+/datasets/**/*.csv
+/datasets/**/*.duckdb
+/datasets/**/*.duckdb.wal
+/datasets/**/*.h5
+/datasets/**/*.hdf5
+/datasets/**/*.npy
+/datasets/**/*.npz
+/datasets/**/*.joblib
+/datasets/**/prepared/
+
+!/datasets/higgs/higgs_50k.indices.npz
+!/datasets/spr xray/cohort_selection.csv
+
+/.venv/
+/artifacts/
+/tests/
+__pycache__/
+*.pyc
