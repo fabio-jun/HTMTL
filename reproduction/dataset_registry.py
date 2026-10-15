@@ -3,6 +3,11 @@ import json
 import sys
 from pathlib import Path
 
+MODEL_PANEL = (
+    'ecc', 'hmtrf_random_norm', 'hmtrf_uniform', 'hmtrf_uniform_norm',
+    'local', 'mlp', 'rfstd', 'mtt',
+)
+
 def _load_dataset_module(unique_name: str, path: Path):
     if unique_name in sys.modules:
         cached = sys.modules[unique_name]
@@ -21,14 +26,14 @@ def _load_dataset_module(unique_name: str, path: Path):
 
 def configure_imports(root):
     root = Path(root)
-    for relative in ('review', 'src/preparation', 'src/execution', 'src/results', 'src/methods', 'datasets/higgs'):
+    for relative in ('reproduction', 'src/preparation', 'src/execution', 'src/results', 'src/methods', 'datasets/higgs'):
         path = str(root / relative)
         if path not in sys.path:
             sys.path.insert(0, path)
 
 
 def inventory(root):
-    records = json.loads((Path(root) / 'review/datasets.json').read_text())['datasets']
+    records = json.loads((Path(root) / 'reproduction/datasets.json').read_text())['datasets']
     labels = [record['label'] for record in records]
     if len(labels) != len(set(labels)):
         raise ValueError('Duplicate labels in official inventory')

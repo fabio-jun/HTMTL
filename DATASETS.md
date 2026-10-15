@@ -1357,3 +1357,132 @@ The 17 sensor views describe the same 2,205 load cycles. Each row summarizes one
 | `target_internal_pump_leakage_regression` | Regression | Pump leakage severity: 0 = none, 1 = weak, 2 = severe. |
 | `target_hydraulic_bar_regression` | Regression | Hydraulic accumulator pressure (bar): 90, 100, 115 or 130. |
 | `target_stable_flag_binary` | Binary | 0 = stable conditions, 1 = steady-state conditions may not yet have been reached. |
+
+## Preprocessing from original sources
+
+First, install the files described below and run the corresponding preprocessing command. Paths are relative to the repository root. Follow each provider's access and usage terms.
+
+### Preprocessing workflow
+
+Without `--work-root`, `preprocess` runs the source preprocessor and creates the registered processed input. For example, after installing the WHAS1 source:
+
+```bash
+.venv/bin/python reproduction/pipeline.py preprocess --label whas1_preprocessed
+```
+
+Then run `prepare` and `train` as shown in the README. Existing processed outputs are protected against overwriting.
+
+With `--work-root`, `preprocess` combines source reconstruction with experiment-input preparation and MTT export:
+
+```bash
+.venv/bin/python reproduction/pipeline.py preprocess --label assistments2009_sb --work-root artifacts/assistments2009-sb-reconstructed --workers 1
+```
+
+For ASSISTments, this reconstructs the five folds from the registered original sources. Use the resulting work directory with `train`. The work directory stores preparation artifacts, not the original source files. Use a new directory and install the required sources first. Datasets without a registered reconstruction route require their processed input to be installed separately.
+
+If the registered ASSISTments bundle is missing, `prepare` also attempts reconstruction from the registered sources. With an installed bundle, it reuses the existing folds instead.
+
+HIGGS and SPR cohort reconstruction uses the included official selection maps:
+
+```bash
+.venv/bin/python reproduction/pipeline.py preprocess --label higgs_50k --input datasets/higgs/train_val_test.h5
+
+.venv/bin/python reproduction/pipeline.py preprocess --label spr_xray_manifest --input '/path/to/spr xray' --output artifacts/spr-raw-selected --device cuda:0 --batch-size 16
+```
+
+The SPR `--input` accepts either a full-embedding directory or a Kaggle dataset root containing `train_age.csv`, `train_gender.csv`, and the literal `kaggle/kaggle/train/` subtree. The image route needs only those images and labels plus the included selection CSV. If using `--output` above, install the resulting selected-cohort files at the registered SPR input path before running `prepare`.
+
+For command options, run `.venv/bin/python reproduction/pipeline.py preprocess --help`.
+
+### Source downloads and installation paths
+
+#### SUPPORT
+
+Source: [Vanderbilt/HBiostat](https://hbiostat.org/data/) — [TSV](https://hbiostat.org/data/repo/support.tsv)
+
+Download `support.tsv` unchanged to `datasets/support_withoutmissing_outputs/support.tsv`, then run `.venv/bin/python reproduction/pipeline.py preprocess --label support_withoutmissing_outputs`. The reader accepts the original tab-delimited format without manual CSV conversion. It also accepts `support.csv` and gives that CSV priority when both are present. Preprocessing generates `support_withoutmissing_outputs.csv` and the auxiliary `support_withmissing.csv`.
+
+#### SUPPORT2
+
+Source: [Vanderbilt/HBiostat](https://hbiostat.org/data/) — [CSV ZIP](https://hbiostat.org/data/repo/support2csv.zip)
+
+Extract `support2.csv` to `datasets/support2_withoutmissing_outputs/support2.csv`.
+
+#### WHAS1 (481 records)
+
+Download: [Google Drive](https://drive.google.com/drive/u/3/folders/1-1jRbhQtV8b_8Dpwamz2SkG_xUxzGaKP).
+
+Extract `whas1_preprocessed.zip`, take `whas1.csv` and place it at `datasets/whas1_preprocessed/raw/whas1.csv` to run preprocessing. The reader also accepts the original `whas.dat` in the same raw directory.
+
+#### WHAS500
+
+Download: [Google Drive](https://drive.google.com/drive/u/3/folders/1-1jRbhQtV8b_8Dpwamz2SkG_xUxzGaKP).
+
+Extract `whas500_preprocessed.zip`, take `whas500.csv` and place it at `datasets/whas500_preprocessed/raw/whas500.csv` to run preprocessing.
+
+#### ASSISTments 2009–2010 SB/NSB
+
+Source: [SB release](https://sites.google.com/site/assistmentsdata/home/2009-2010-assistment-data/skill-builder-data-2009-2010), [NSB release](https://sites.google.com/site/assistmentsdata/home/2009-2010-assistment-data/non-skill-builder-data-2009-10)
+
+Install the matching original releases as `datasets/assistments2009-2010/sb.csv` and `nsb.csv`. Original Drive links may require Google access. The corrected/collapsed SB export and the combined Full Data export are not verified substitutes for these benchmark sources.
+
+#### ASSISTments Goldstein P(J), 2011
+
+Source: [Official page](https://sites.google.com/site/assistmentsdata/datasets/2011-goldstein-baker-heffernan) — [WPI ZIP](http://web.cs.wpi.edu/~nth/PublicScienceArchive/assistments-p(j)-data.zip)
+
+Extract `PJ Data (Features Added).csv` and `PJ Data (Actions).csv` to `datasets/assistments_paper:2011_goldstein/`. Preserve spaces, parentheses and the colon in the directory name.
+
+#### ASSISTments 2012–2013
+
+Source: [Official release](https://sites.google.com/site/assistmentsdata/datasets/2012-13-school-data-with-affect) — [ZIP](https://drive.google.com/file/d/1cU6Ft4R3hLqA7G1rIGArVfelSZvc6RxY/view?usp=sharing)
+
+Extract the CSV with affect predictions and install as `datasets/assistments2012-2013/data.csv`. Preserve the `actions` column. One source serves both SB and NSB.
+
+#### ASSISTments Controlled Experiments
+
+Source: [Study supplement](https://sites.google.com/site/las2016data/data/thison) — [ThisOne.csv](https://drive.google.com/file/d/16zGibMINqvQAef_FkP9f78Y4OlON4NrX/view?usp=drive_web)
+
+Save as `datasets/assistments_from_controlled_experiments/ThisOne.csv`. Use the CSV release, not an arbitrary export of the spreadsheet.
+
+#### ASSISTments 2017
+
+Source: [Official access page](https://sites.google.com/view/assistmentsdatamining/dataset)
+
+Complete the provider's access form and accept its terms. The download link is sent by email. Install as `datasets/assistments2017/Assistments2017.csv`.
+
+#### ASSISTments 2019–2020
+
+
+Source: [OSF release](https://osf.io/q7zc5/) — [full-school-year ZIP](https://osf.io/download/7sftn/)
+
+Extract the complete archive to `datasets/assistments2019-2020/2019-2020_school_year/`, preserving filenames. The readers need `adets.csv`, `pdets.csv`, `plogs.csv`, `alogs.csv`, and `slogs.csv`. Do not substitute the pre/post-shutdown subsets.
+
+#### ASSISTments 2020–2021
+
+Source: [OSF release](https://osf.io/7cgav/) — [aug_to_oct ZIP](https://osf.io/download/gny98/)
+
+Extract this block to `datasets/assistments2020-2021/aug_to_oct/`, preserving filenames. The readers need `adets.csv`, `pdets.csv`, `plogs.csv`, `alogs.csv`, and `slogs.csv`. Other period blocks are not inputs to this benchmark.
+
+#### Auction Verification
+
+Source: [UCI release](https://archive.ics.uci.edu/dataset/713/auction+verification) — [ZIP](https://archive.ics.uci.edu/static/public/713/auction+verification.zip)
+
+Place the release's data CSV at `datasets/auction_preprocessed/data.csv`, retaining its original header.
+
+#### SPR X-ray
+
+Source: [Kaggle dataset page](https://www.kaggle.com/datasets/felipekitamura/spr-x-ray-age-and-gender-dataset)
+
+Image downloads may require a Kaggle account and accepted competition rules. Raw extraction needs labeled training PNGs in `kaggle/kaggle/train/` plus `train_age.csv` and `train_gender.csv` at the Kaggle dataset root.
+
+#### HIGGS source used by this pipeline
+
+Source: [MultiTab](https://github.com/Armanfard-Lab/MultiTab) — [authors' HDF5 collection](https://huggingface.co/datasets/Dimitri-Sinodinos/multitab/tree/main) — [higgs.h5](https://huggingface.co/datasets/Dimitri-Sinodinos/multitab/resolve/main/higgs.h5?download=true)
+
+Download `higgs.h5`, rename it to `train_val_test.h5`, and place it at `datasets/higgs/train_val_test.h5`. This is an upstream prepared HDF5, not the UCI raw CSV. The HIGGS cohort reconstruction command expects this HDF5 and the repository's fixed selection map.
+
+#### Hydraulic (17 sensor views)
+
+Source: [UCI release](https://archive.ics.uci.edu/dataset/447/condition+monitoring+of+hydraulic+systems) — [ZIP](https://archive.ics.uci.edu/static/public/447/condition+monitoring+of+hydraulic+systems.zip)
+
+Extract the sensor `*.txt` files and `profile.txt` into `datasets/hydraulic/data/`. Run `preprocess --label <sensor> --work-root <new-directory>` to extract that sensor's tsfresh features and prepare its folds/MTT inputs. Existing processed CSVs are protected against overwriting. CP is written to `datasets/EPS1/CP.csv`. The other views use `datasets/<sensor>/<sensor>.csv`.

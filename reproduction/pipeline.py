@@ -56,7 +56,7 @@ class Backend:
     def module(self, name):
         loaded = importlib.import_module(name)
         if loaded.__file__ is None or not any(Path(loaded.__file__).resolve().is_relative_to(parent)
-                                             for parent in (self.root / 'src', self.root / 'review', self.root / 'datasets/higgs')):
+                                              for parent in (self.root / 'src', self.root / 'reproduction', self.root / 'datasets/higgs')):
             raise RuntimeError(f'{name} belongs to another checkout, run the release in an isolated interpreter')
         return loaded
 
@@ -68,10 +68,12 @@ class Backend:
 
     def prepare_source(self, item, source, workers):
         parameters = item.get('preparation')
-        if not parameters or parameters['n_folds'] != 5 or parameters['seed'] != 42:
+        if not parameters or parameters['seed'] != 42:
             raise ValueError('Preparation parameters are missing or invalid')
         adapter = self.adapter(item)
-        self.module('fold_preparation').prepare_dataset_folds(adapter, source.parent, workers=workers, **parameters)
+        fold_preparation = self.module('fold_preparation')
+        fold_preparation.prepare_dataset_folds(
+            adapter, source.parent, workers=workers, n_folds=fold_preparation.FOLD_COUNT, **parameters)
 
 
     def specs(self, item, source):

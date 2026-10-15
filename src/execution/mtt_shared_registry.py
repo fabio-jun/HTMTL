@@ -2,8 +2,8 @@ from __future__ import annotations
 import sys as _sys
 from pathlib import Path as _Path
 _release_root = _Path(__file__).resolve().parents[2]
-if str(_release_root / "review") not in _sys.path:
-    _sys.path.insert(0, str(_release_root / "review"))
+if str(_release_root / "reproduction") not in _sys.path:
+    _sys.path.insert(0, str(_release_root / "reproduction"))
 from dataset_registry import configure_imports
 configure_imports(_release_root)
 
@@ -13,8 +13,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from fold_preparation import discover_feature_columns, read_prepared_metadata
-from dataset_registry import inventory, entry
+from fold_preparation import FOLD_COUNT, discover_feature_columns, read_prepared_metadata
+from dataset_registry import MODEL_PANEL, inventory, entry
 
 _RECORDS = inventory(Path(__file__).resolve().parents[2])
 PREPARED_LABELS = tuple(label for label, item in _RECORDS.items()
@@ -22,7 +22,7 @@ PREPARED_LABELS = tuple(label for label, item in _RECORDS.items()
 CSV_PATHS = {label: item["input_location"] for label, item in _RECORDS.items()
              if Path(item["input_location"]).suffix == ".csv" and label != "higgs_50k"}
 
-N_FOLDS = 5
+N_FOLDS = FOLD_COUNT
 SEED = 42
 SELECTION_VAL_FRACTION = 0.2
 
@@ -112,7 +112,7 @@ def log_root(project_root):
 
 
 def _native_models(metadata):
-    models = tuple(model for model in metadata["models"] if model != "mtt")
+    models = tuple(model for model in MODEL_PANEL if model != "mtt")
     if not models:
         raise ValueError("No native models configured")
     return models

@@ -2,8 +2,8 @@ from __future__ import annotations
 import sys as _sys
 from pathlib import Path as _Path
 _release_root = _Path(__file__).resolve().parents[2]
-if str(_release_root / "review") not in _sys.path:
-    _sys.path.insert(0, str(_release_root / "review"))
+if str(_release_root / "reproduction") not in _sys.path:
+    _sys.path.insert(0, str(_release_root / "reproduction"))
 from dataset_registry import configure_imports
 configure_imports(_release_root)
 

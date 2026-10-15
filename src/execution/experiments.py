@@ -1,8 +1,8 @@
 import sys as _sys
 from pathlib import Path as _Path
 _release_root = _Path(__file__).resolve().parents[2]
-if str(_release_root / "review") not in _sys.path:
-    _sys.path.insert(0, str(_release_root / "review"))
+if str(_release_root / "reproduction") not in _sys.path:
+    _sys.path.insert(0, str(_release_root / "reproduction"))
 from dataset_registry import configure_imports
 configure_imports(_release_root)
 
@@ -18,9 +18,9 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 # Custom models
 from experiment_metrics import MetricsCollector, normalize_predictions
-from fold_preparation import read_prepared_folds, validate_prepared_label as _validate_prepared_label
+from fold_preparation import FOLD_COUNT, read_prepared_folds, validate_prepared_label as _validate_prepared_label
 import json
-from dataset_registry import checked_path, entry, regular_tree, separate_output, write_json
+from dataset_registry import MODEL_PANEL, checked_path, entry, regular_tree, separate_output, write_json
 
 # -------------------------
 # Global parameters
@@ -29,7 +29,7 @@ RF_N_ESTIMATORS = 200
 RF_MAX_DEPTH = None
 RF_RANDOM_STATE = 42
 N_CHAINS = "all"
-N_FOLDS = 5
+N_FOLDS = FOLD_COUNT
 N_JOBS = int(os.environ.get("MTL_N_JOBS") or -1)
 
 short_to_long = {
@@ -269,10 +269,10 @@ def load_native_models():
 def run_panel(root, label, models, output_root, work_root=None, backend=None):
     root = checked_path(Path.cwd(), root)
     item = entry(root, label)
-    if not models or len(set(models)) != len(models) or (models != ['all'] and set(models) - set(item['models'])):
+    if not models or len(set(models)) != len(models) or (models != ['all'] and set(models) - set(MODEL_PANEL)):
         raise ValueError('Select only official models, without duplicates')
     
-    selected = list(item['models']) if models == ['all'] else [model for model in item['models'] if model in models]
+    selected = list(MODEL_PANEL) if models == ['all'] else [model for model in MODEL_PANEL if model in models]
 
     if work_root is None:
         raise FileNotFoundError('Specify --work-root from a completed prepare stage')
@@ -285,7 +285,13 @@ def run_panel(root, label, models, output_root, work_root=None, backend=None):
         raise FileNotFoundError('Preparation is partial, a completed prepare stage is required')
     prepared = json.loads(record_path.read_text())
 
-    if prepared.get('label') != label or prepared.get('preparation') != item.get('preparation'):
+    expected_preparation = item.get('preparation')
+    actual_preparation = prepared.get('preparation')
+    if actual_preparation and expected_preparation:
+        actual_preparation = dict(actual_preparation)
+        if 'n_folds' in actual_preparation and actual_preparation.pop('n_folds') != FOLD_COUNT:
+            actual_preparation = None
+    if prepared.get('label') != label or actual_preparation != expected_preparation:
         raise ValueError('Prepared recipe differs from the selected official cohort')
     
     source = checked_path(root, prepared['source'])
