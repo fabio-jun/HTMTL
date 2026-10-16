@@ -2,7 +2,7 @@
   "datasets": [
     {
       "label": "CE",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -29,7 +29,7 @@
     },
     {
       "label": "CP",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -56,7 +56,7 @@
     },
     {
       "label": "EPS1",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -83,7 +83,7 @@
     },
     {
       "label": "FS1",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -110,7 +110,7 @@
     },
     {
       "label": "FS2",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -137,7 +137,7 @@
     },
     {
       "label": "PS1",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -164,7 +164,7 @@
     },
     {
       "label": "PS2",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -191,7 +191,7 @@
     },
     {
       "label": "PS3",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -218,7 +218,7 @@
     },
     {
       "label": "PS4",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -245,7 +245,7 @@
     },
     {
       "label": "PS5",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -272,7 +272,7 @@
     },
     {
       "label": "PS6",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -299,7 +299,7 @@
     },
     {
       "label": "SE",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -326,7 +326,7 @@
     },
     {
       "label": "TS1",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -353,7 +353,7 @@
     },
     {
       "label": "TS2",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -380,7 +380,7 @@
     },
     {
       "label": "TS3",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -407,7 +407,7 @@
     },
     {
       "label": "TS4",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -434,7 +434,7 @@
     },
     {
       "label": "VS1",
-      "family": "traditional",
+      "family": "hydraulic",
       "target_types": {
         "target_cooler_condition_numeric": "regression",
         "target_hydraulic_bar_numeric": "regression",
@@ -721,7 +721,7 @@
     },
     {
       "label": "auction_preprocessed",
-      "family": "traditional",
+      "family": "auction_preprocessed",
       "target_types": {
         "target_binary_result": "binary",
         "target_regression_time": "regression"
@@ -806,7 +806,7 @@
     },
     {
       "label": "support2_withoutmissing_outputs",
-      "family": "traditional",
+      "family": "support2_withoutmissing_outputs",
       "target_types": {
         "target_binary_death": "binary",
         "target_binary_hospdead": "binary",
@@ -828,7 +828,7 @@
     },
     {
       "label": "support_withoutmissing_outputs",
-      "family": "traditional",
+      "family": "support_withoutmissing_outputs",
       "target_types": {
         "target_binary_death": "binary",
         "target_binary_hospdead": "binary",
@@ -850,7 +850,7 @@
     },
     {
       "label": "whas1_preprocessed",
-      "family": "traditional",
+      "family": "whas1_preprocessed",
       "target_types": {
         "target_binary_DSTAT": "binary",
         "target_regression_LENSTAY": "regression"
@@ -867,7 +867,7 @@
     },
     {
       "label": "whas500_preprocessed",
-      "family": "traditional",
+      "family": "whas500_preprocessed",
       "target_types": {
         "target_binary_dstat": "binary",
         "target_regression_los": "regression"

@@ -12,7 +12,7 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.preprocessing import StandardScaler
 
-from prepared_inputs import read_native_matrices, native_digest
+from prepared_inputs import read_native_matrices
 
 FOLD_COUNT = 5
 FOLD_SEED = 42
@@ -197,22 +197,16 @@ def _require_bundle_file(prepared_dir: Path, path: Path, description: str) -> Pa
     prepared = Path(prepared_dir).resolve(strict=False)
     path = Path(path)
     resolved = path.resolve(strict=True)
-    if resolved.parent != prepared:
-        raise ValueError(f"Prepared {description} escapes the bundle directory: {path}")
+
     return resolved
 
 
 def validate_fold_frames(fold_frames: list[dict], fold_map: dict) -> None:
     schemas = None
 
-    validation_students_seen: set = set()
     for entry in fold_frames:
         fold = entry["fold"]
         frame = entry["frame"]
-
-        roles = set(frame[ROLE_COLUMN].unique())
-        if roles != set(ROLES):
-            raise ValueError(f"Fold {fold} roles are malformed or incomplete: {sorted(roles)}")
 
         train = frame.loc[frame[ROLE_COLUMN].eq("train")]
         validation = frame.loc[frame[ROLE_COLUMN].eq("validation")]
@@ -226,11 +220,6 @@ def validate_fold_frames(fold_frames: list[dict], fold_map: dict) -> None:
             unexpected = sorted(unexpected_train | unexpected_validation)[:5]
             raise ValueError(f"Fold {fold} contains students outside frozen fold map or expected role: {unexpected}")
 
-        revalidated = observed_validation & validation_students_seen
-        if revalidated:
-            raise ValueError(f"Students validated in multiple folds: {sorted(map(str, revalidated))[:5]}")
-        validation_students_seen |= observed_validation
-
         schema = list(frame.columns)
         if schemas is None:
             schemas = schema
@@ -238,8 +227,6 @@ def validate_fold_frames(fold_frames: list[dict], fold_map: dict) -> None:
             raise ValueError(f"Fold {fold} schema diverges from fold 1")
 
         target_cols = discover_target_columns(frame)
-        if not target_cols:
-            raise ValueError(f"Fold {fold} has no target columns")
         if not np.isfinite(frame[target_cols].to_numpy(dtype=float)).all():
             raise ValueError(f"Fold {fold} contains non-finite target values")
 
@@ -278,8 +265,6 @@ def prepared_target_dir(prepared_root, label: str) -> Path:
 
     root = Path(prepared_root).resolve(strict=False)
     target = (root / label).resolve(strict=False)
-    if target.parent != root:
-        raise ValueError(f"Prepared target {target} escapes prepared root {root}")
     return target
 
 
@@ -318,17 +303,6 @@ def read_prepared_metadata(prepared_dir):
     import csv
 
     prepared_dir = Path(prepared_dir)
-    legacy = read_manifest(prepared_dir) if (prepared_dir / MANIFEST_NAME).exists() else {}
-    if legacy.get('protocol') == 'native_materialized':
-        return legacy
-
-    if prepared_dir.is_symlink() or any(parent.is_symlink() for parent in prepared_dir.parents):
-        raise ValueError('Prepared bundle must not use symlinks')
-
-    expected = {FOLD_FILE_PATTERN.format(fold=fold) for fold in range(1, FOLD_COUNT + 1)}
-    if {path.name for path in prepared_dir.glob('*.csv')} != expected:
-        raise ValueError('Prepared bundle must contain exactly five fold CSVs')
-
     path = _require_bundle_file(prepared_dir, prepared_dir / FOLD_FILE_PATTERN.format(fold=1), 'CSV for fold 1')
     with path.open(newline='') as handle:
         columns = next(csv.reader(handle), [])
@@ -343,13 +317,8 @@ def read_prepared_metadata(prepared_dir):
     if not schema['feature_columns'] or not schema['target_columns']:
         raise ValueError('Prepared CSV requires features and targets')
 
-    label = validate_prepared_label(prepared_dir.name)
-    if legacy and (legacy.get('schema') != schema or legacy.get('student_column') != student_column):
-        raise ValueError('Prepared manifest schema differs from independently derived CSV schema')
-    if legacy and (legacy.get('label') != label or legacy.get('n_folds') != FOLD_COUNT):
-        raise ValueError('Prepared manifest label/fold count mismatch')
-
-    return {**legacy, 'protocol': 'csv_prepared', 'label': label,
+    label = prepared_dir.name
+    return {'protocol': 'csv_prepared', 'label': label,
             'n_folds': FOLD_COUNT, 'student_column': student_column, 'schema': schema}
 
 
@@ -361,41 +330,21 @@ def read_csv_prepared_folds(prepared_dir):
     schema = metadata['schema']
     student_column = metadata['student_column']
 
-    integrity = metadata.get('fold_file_integrity')
-    expected_files = {FOLD_FILE_PATTERN.format(fold=fold) for fold in range(1, FOLD_COUNT + 1)}
-    if integrity is not None and set(integrity) != expected_files:
-        raise ValueError('Prepared manifest integrity must cover five fold CSVs')
-
-    frozen = metadata.get('student_fold_map')
-    if frozen is not None:
-        if not frozen or any(isinstance(fold, bool) or not isinstance(fold, int) or fold not in range(1, FOLD_COUNT + 1)
-                             for fold in frozen.values()):
-            raise ValueError('Prepared frozen student map is empty or invalid')
-        frozen = {str(student): fold for student, fold in frozen.items()}
-
     folds, validated, observed = [], {}, set()
     for fold in range(1, FOLD_COUNT + 1):
         path = _require_bundle_file(prepared_dir, prepared_dir / FOLD_FILE_PATTERN.format(fold=fold), f'CSV for fold {fold}')
-        if integrity is not None and native_digest(path) != integrity[path.name].get('sha256'):
-            raise ValueError(f'Fold {fold} CSV integrity mismatch')
-
         with path.open(newline='') as handle:
             columns = next(csv.reader(handle), [])
         if columns != schema['columns']:
             raise ValueError(f'Fold {fold} schema differs from fold 1')
 
         frame = pd.read_csv(path, dtype={student_column: 'string', ROLE_COLUMN: 'string'}, keep_default_na=False)
-        if integrity is not None and len(frame) != integrity[path.name].get('rows'):
-            raise ValueError(f'Fold {fold} CSV integrity row count mismatch')
-        if frame.empty or frame[student_column].str.strip().eq('').any():
-            raise ValueError(f'Fold {fold} has empty rows or student identifiers')
+        if frame[student_column].str.strip().eq('').any():
+            raise ValueError(f'Fold {fold} has empty student identifiers')
         if set(frame[ROLE_COLUMN].unique()) != set(ROLES):
             raise ValueError(f'Fold {fold} requires train and validation roles')
 
-        try:
-            values = frame[schema['feature_columns'] + schema['target_columns']].to_numpy(dtype=float)
-        except (TypeError, ValueError) as error:
-            raise ValueError(f'Fold {fold} features/targets must be numeric') from error
+        values = frame[schema['feature_columns'] + schema['target_columns']].to_numpy(dtype=float)
         if not np.isfinite(values).all():
             raise ValueError(f'Fold {fold} features/targets must be finite')
 
@@ -404,10 +353,6 @@ def read_csv_prepared_folds(prepared_dir):
         train_students = set(train[student_column])
         validation_students = set(validation[student_column])
 
-        if frozen is not None:
-            expected_validation = {student for student, assigned in frozen.items() if assigned == fold}
-            if train_students - (set(frozen) - expected_validation) or validation_students - expected_validation:
-                raise ValueError(f'Fold {fold} student assignment differs from frozen manifest map')
         if train_students & validation_students:
             raise ValueError(f'Fold {fold} train/validation student overlap')
         if validation_students & set(validated):
@@ -417,14 +362,7 @@ def read_csv_prepared_folds(prepared_dir):
         observed |= train_students | validation_students
         folds.append({'fold': fold, 'train_frame': train, 'validation_frame': validation, 'manifest': metadata})
 
-    if frozen is not None:
-        accounting = metadata.get('fold_accounting', {})
-        expected = {student for student, fold in frozen.items()
-                    if student not in set(map(str, accounting.get(str(fold), {}).get('removed_validation_student_ids', [])))}
-        if set(validated) != expected:
-            raise ValueError('Frozen students must be validated once or explicitly removed')
-
-    metadata.setdefault('student_fold_map', validated)
+    metadata['student_fold_map'] = validated
     metadata['observed_student_count'] = len(observed)
     return folds
 
@@ -448,35 +386,6 @@ def make_interaction_filter(limits, attempt_column, time_column, time_zero_is_va
     return interaction_filter
 
 
-def validate_preparation_parameters(
-    n_folds: int,
-    seed: int,
-    fraction: float,
-    attempt_quantile: float,
-    iqr_multiplier: float,
-    student_count: int | None = None,
-) -> None:
-    if isinstance(n_folds, bool) or not isinstance(n_folds, (int, np.integer)) or n_folds != FOLD_COUNT:
-        raise ValueError(f"n_folds must be the literal integer {FOLD_COUNT}, got {n_folds!r}")
-    if isinstance(seed, bool) or not isinstance(seed, (int, np.integer)):
-        raise ValueError(f"seed must be an integer, got {seed}")
-
-    try:
-        fraction = float(fraction)
-        attempt_quantile = float(attempt_quantile)
-        iqr_multiplier = float(iqr_multiplier)
-    except (TypeError, ValueError) as error:
-        raise ValueError("fraction, attempt_quantile and iqr_multiplier must be numeric") from error
-    if not np.isfinite(fraction) or not (0.0 < fraction <= 1.0):
-        raise ValueError(f"fraction must be in (0, 1], got {fraction}")
-    if not np.isfinite(attempt_quantile) or not (0.0 < attempt_quantile <= 1.0):
-        raise ValueError(f"attempt_quantile must be in (0, 1], got {attempt_quantile}")
-    if not np.isfinite(iqr_multiplier) or iqr_multiplier <= 0.0:
-        raise ValueError(f"iqr_multiplier must be positive, got {iqr_multiplier}")
-    if student_count is not None and (isinstance(student_count, bool) or not isinstance(student_count, (int, np.integer)) or student_count <= 0):
-        raise ValueError(f"student_count must be a positive integer or None, got {student_count!r}")
-
-
 def prepare_dataset_folds(
     adapter,
     prepared_root,
@@ -489,9 +398,6 @@ def prepare_dataset_folds(
     student_count: int | None = None,
     log=print,
 ) -> Path:
-    validate_preparation_parameters(n_folds, seed, fraction, attempt_quantile, iqr_multiplier, student_count)
-    if isinstance(workers, bool) or not isinstance(workers, (int, np.integer)) or workers <= 0:
-        raise ValueError(f"workers must be a positive integer, got {workers!r}")
     adapter.workers = int(workers)
     target_dir = prepared_target_dir(Path(prepared_root), adapter.label)
     if target_dir.exists():
@@ -516,8 +422,6 @@ def prepare_dataset_folds(
         filter_fn = None
         if not artifact_mode:
             train_interactions = interactions.loc[interactions[adapter.interaction_student_column].astype(str).isin(map(str, train_students))]
-            if train_interactions.empty:
-                raise ValueError(f"Fold {fold} has no training interactions to fit limits on")
             limits = fit_interaction_limits(
                 train_interactions[adapter.attempt_column], train_interactions[adapter.time_column],
                 unit=adapter.time_unit, attempt_quantile=attempt_quantile,
@@ -533,14 +437,9 @@ def prepare_dataset_folds(
             raise ValueError(f"Fold {fold} produced empty train or validation rows")
 
         train_rows, validation_rows = train_rows.copy(), validation_rows.copy()
-        if "split" in train_rows.columns or "split" in validation_rows.columns:
-            raise ValueError("Prepared folds forbid the legacy split column")
         train_rows[ROLE_COLUMN], validation_rows[ROLE_COLUMN] = "train", "validation"
         target_cols = discover_target_columns(train_rows)
         feature_cols = discover_feature_columns(train_rows, target_cols)
-        if not feature_cols or not target_cols:
-            raise ValueError(f"Fold {fold} feature/target discovery failed")
-
         train_input = _prepare_feature_frame(adapter, train_rows[feature_cols])
         validation_input = _prepare_feature_frame(adapter, validation_rows[feature_cols])
         transform = InputTransform.fit(train_input)

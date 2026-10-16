@@ -21,19 +21,12 @@ INTERACTION_COLUMNS = (
     "skill", "problemId", "userId", "assignmentId", "assistmentId", "startTime", "endTime", "timeTaken", "correct",
     "original", "hint", "hintCount", "scaffold", "bottomHint", "attemptCount", "problemType", "frWorkingInSchool",
 )
-ACTION_COLUMNS = (
-    "userId", "assignmentId", "assistmentId", "problemId", "hintCount", "bottomHint", "attemptCount",
-)
-PROBLEM_TYPE_MAP = {
-    "algebra": "problem_type_algebra", "choose_1": "problem_type_choose_one", "fill_in_1": "problem_type_fill_in",
-}
+ACTION_COLUMNS = ("userId", "assignmentId", "assistmentId", "problemId", "hintCount", "bottomHint", "attemptCount")
+PROBLEM_TYPE_MAP = {"algebra": "problem_type_algebra", "choose_1": "problem_type_choose_one", "fill_in_1": "problem_type_fill_in"}
 ANSWER_TYPES = ("algebra", "choose_1", "fill_in_1")
-
 ID_COLUMNS = ("user_id", "assignment_id", "problem_id")
 METADATA_COLUMNS = ()
-TARGET_COLUMNS = (
-    "target_binary_first_correct", "target_regression_first_response_time",
-)
+TARGET_COLUMNS = ("target_binary_first_correct", "target_regression_first_response_time",)
 FEATURE_COLUMNS = (
     "interactions", "repeated_problem_rate", "scaffolding_problem_rate", "original_problem_count", "correct_rate",
     "hint_count_mean", "hint_count_total", "hint_use_rate", "bottom_hint_rate", "first_action_attempt_rate",
@@ -343,10 +336,6 @@ class _PJAdapter(BasePreparedAdapter):
     attempt_column = "attempt_count"
     time_column = "_time_taken"
     time_unit = "seconds"
-    filter_description = (
-        "reconstructed attempt_count P99.9 and log1p-IQR fences on timeTaken (seconds), "
-        "applied to joined problem interactions before freeze_targets/build_student_rows"
-    )
 
     def __init__(self, module=None, features_path: Path | None = None, actions_path: Path | None = None):
         self._module = module

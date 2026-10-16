@@ -226,10 +226,6 @@ class _Base2019NSBAdapter(BasePreparedAdapter):
     attempt_column = "attempt_count"
     time_column = "time_on_task"
     time_unit = "seconds"
-    filter_description = (
-        "raw attempt_count P99.9 and log1p-IQR fences on time_on_task (seconds), applied to the "
-        "cleaned behavioral pool before target selection and histories"
-    )
 
     def __init__(self, split_module=None, branch_module=None, data_dir: Path | None = None,
                  plogs=None, adets=None, pdets=None, workers: int = 1):

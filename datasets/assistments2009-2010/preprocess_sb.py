@@ -39,9 +39,7 @@ FEATURE_COLUMNS = (
     "selected_skill_hint_use_rate", "recent_10_correct_trend", "recent_10_log1p_attempt_count_trend",
     "recent_10_log1p_overlap_time_seconds_trend", "recent_10_hint_use_trend",
 )
-TARGET_COLUMNS = (
-    "target_binary_mastered", "target_regression_problems", "target_regression_work_time",
-)
+TARGET_COLUMNS = ("target_binary_mastered", "target_regression_problems", "target_regression_work_time")
 OUTPUT_COLUMNS = METADATA_COLUMNS + FEATURE_COLUMNS + TARGET_COLUMNS
 PARALLEL_MIN_CANDIDATES = 2_000
 _WORKER_SOURCE_ROWS = None

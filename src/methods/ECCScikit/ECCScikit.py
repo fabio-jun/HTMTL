@@ -36,7 +36,6 @@ class ECCScikit:
         else:
             rng.shuffle(all_orders)
             self.orders_ = all_orders[:self.n_chains]
-#        print(self.orders_)
         self.chains_ = []
 
         for order in self.orders_:
@@ -52,12 +51,10 @@ class ECCScikit:
                 model.fit(X_ext, Y[:, idx:idx+1].ravel())
                 chain_models.append(model)
 
-#                print(model.predict(X_ext).shape)
                 # Append true output for training
                 if self.output_types_[idx] == "regression" or self.output_types_[idx] == "binary":
                     X_ext = np.hstack([X_ext, model.predict(X_ext).reshape(-1,1)])
                 else:
-                    #print(model.predict_proba(X_ext))
                     X_ext = np.hstack([X_ext, model.predict_proba(X_ext)]) 
 
 

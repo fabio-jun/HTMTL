@@ -31,9 +31,7 @@ EXTRACTED_FEATURE_COLUMNS = (
     "endsWithAutoScaffolding_rate", "frWorkingInSchool_rate", "responseIsFillIn_rate", "responseIsChosen_rate",
     "Ln_mean",
 ) + PROBLEMTYPE_RATE_COLUMNS
-USAGE_YEAR_MAP = {
-    "2004-2005": 0, "2005-2006": 1,
-}
+USAGE_YEAR_MAP = {"2004-2005": 0, "2005-2006": 1}
 PRE_MCAS_CUTOFFS = {
     0: pd.Timestamp("2005-05-13", tz="America/New_York").timestamp(),
     1: pd.Timestamp("2006-05-13", tz="America/New_York").timestamp(),
@@ -41,9 +39,7 @@ PRE_MCAS_CUTOFFS = {
 FEATURE_COLUMNS = ("usage_year_2005_2006",) + DIRECT_FEATURE_COLUMNS + EXTRACTED_FEATURE_COLUMNS
 TARGET_COLUMNS = ("target_regression_mcas", "target_binary_enrolled")
 OUTPUT_COLUMNS = ("source_student_id",) + FEATURE_COLUMNS + TARGET_COLUMNS
-DIRECT_CHECK_COLUMNS = (
-    "SY ASSISTments Usage",
-) + tuple(DIRECT_FEATURE_SOURCES) + ("MCAS", "Enrolled", "Selective", "isSTEM")
+DIRECT_CHECK_COLUMNS = ("SY ASSISTments Usage") + tuple(DIRECT_FEATURE_SOURCES) + ("MCAS", "Enrolled", "Selective", "isSTEM")
 PROBLEMTYPE_ALIASES = {
     "textfieldquestion": "textfield", "interfacetextfieldquestion": "textfield",
     "interfacetextfieldquestion1": "textfield", "radioquestion": "radio", "interfaceradioquestion": "radio",

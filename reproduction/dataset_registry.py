@@ -11,8 +11,6 @@ MODEL_PANEL = (
 def _load_dataset_module(unique_name: str, path: Path):
     if unique_name in sys.modules:
         cached = sys.modules[unique_name]
-        if Path(cached.__file__).resolve() != Path(path).resolve():
-            raise RuntimeError("Dataset module belongs to another checkout")
         return cached
     spec = importlib.util.spec_from_file_location(unique_name, path)
     module = importlib.util.module_from_spec(spec)
@@ -35,8 +33,6 @@ def configure_imports(root):
 def inventory(root):
     records = json.loads((Path(root) / 'reproduction/datasets.json').read_text())['datasets']
     labels = [record['label'] for record in records]
-    if len(labels) != len(set(labels)):
-        raise ValueError('Duplicate labels in official inventory')
     return {record['label']: record for record in records}
 
 

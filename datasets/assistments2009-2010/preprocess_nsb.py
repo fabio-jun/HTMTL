@@ -45,9 +45,7 @@ BASE_FEATURE_COLUMNS = (
     "answer_type_fill_in_1_overlap_time_mean_seconds", "answer_type_fill_in_1_overlap_time_total_seconds",
     "previous_problem_correct", "previous_problem_attempt_count", "previous_problem_overlap_time_seconds",
 )
-TARGET_COLUMNS = (
-    "target_binary_correct", "target_regression_overlap_time", "target_regression_attempts",
-)
+TARGET_COLUMNS = ("target_binary_correct", "target_regression_overlap_time", "target_regression_attempts")
 BASE_OUTPUT_COLUMNS = METADATA_COLUMNS + BASE_FEATURE_COLUMNS + TARGET_COLUMNS
 ADDITIONAL_FEATURE_COLUMNS = (
     "recent_5_correct_rate", "recent_5_attempt_count_mean", "recent_5_overlap_time_mean_seconds",
@@ -342,7 +340,6 @@ class _2009NSBAdapter(BasePreparedAdapter):
     attempt_column = "attempt_count"
     time_column = "overlap_time"
     time_unit = "milliseconds"
-    filter_description = "raw attempt_count P99.9 and log1p-IQR fences on overlap_time (milliseconds)"
 
     def __init__(self, module=None, input_path: Path | None = None):
         self._module = module

@@ -250,10 +250,6 @@ class _Base2019SBAdapter(_Base2019NSBAdapter):
     branch_file = "preprocess_sb.py"
     branch_module_name = "_prepared_assistments2019_sb"
     time_zero_is_valid = True
-    filter_description = (
-        "raw attempt_count P99.9 and log1p-IQR fences on plogs time_on_task (seconds) inside the "
-        "behavioral pool only; alogs assignment times, raw_counts and persisted mastery untouched"
-    )
 
     def __init__(self, split_module=None, branch_module=None, data_dir: Path | None = None,
                  plogs=None, adets=None, pdets=None, alogs=None, lifecycle=None,
